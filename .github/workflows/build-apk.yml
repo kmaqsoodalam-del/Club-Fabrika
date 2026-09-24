@@ -3,9 +3,12 @@ name: Build Club Fabrika APK
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout repository
@@ -17,11 +20,11 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Extract Club Fabrika v2
+      - name: Extract Club Fabrika V3
         run: |
           rm -rf ClubFabrikaBuild
           mkdir ClubFabrikaBuild
-          unzip -q ClubFabrika_Optical_v2.zip -d ClubFabrikaBuild
+          unzip -q ClubFabrika_Optical_v3.zip -d ClubFabrikaBuild
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -29,11 +32,13 @@ jobs:
           gradle-version: '8.9'
 
       - name: Build Debug APK
+        working-directory: ClubFabrikaBuild
         run: |
-          gradle -p ClubFabrikaBuild :app:assembleDebug --stacktrace
+          gradle :app:assembleDebug --stacktrace --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: ClubFabrika-APK
           path: ClubFabrikaBuild/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
